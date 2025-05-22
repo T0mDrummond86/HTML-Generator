@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f8fb;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2a5d9f;
+    }
+    .entry, .mcq-entry {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background-color: #2a5d9f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 0.5rem;
+    }
+    button:hover {
+      background-color: #1d4374;
+    }
+    #output {
+      white-space: pre-wrap;
+      background: #ffffff;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .module-block {
+      border: 2px dashed #bbb;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTML Generator</h1>
+
+  <div id="moduleContainer"></div>
+
+  <div id="controls">
+    <label for="moduleSelect"><strong>Select Module:</strong></label>
+    <select id="moduleSelect">
+      <option value="accordion">Accordion</option>
+      <option value="image">Image + Caption</option>
+      <option value="code">Code Snippet</option>
+      <option value="video">Embedded Video</option>
+      <option value="flashcard">Flashcard Reveal</option>
+      <option value="alert">Tip/Alert Box</option>
+      <option value="table">Table Builder</option>
+    </select>
+    <button type="button" onclick="addModule()">+ Add Module</button>
+    <button type="button" onclick="generateAll()">Generate HTML</button>
+    <button type="button" onclick="deleteLastModule()">- Delete Last Module</button>
+  </div>
+
+  <h2 style="margin-top: 2rem;">Output HTML</h2>
+  <pre id="output"></pre>
+
+  <h2>Live Preview</h2>
+  <div id="preview" style="background: #fff; padding: 1rem; border-radius: 8px; border: 1px solid #ccc;"></div>
+
+  <script>
+    let moduleCounter = 0;
+
+    window.addModule = function() {
+      const type = document.getElementById('moduleSelect').value;
+      const container = document.getElementById('moduleContainer');
+      const moduleId = `module-${moduleCounter++}`;
+      const block = document.createElement('div');
+      block.className = 'module-block';
+      block.dataset.type = type;
+      block.dataset.id = moduleId;
+
+      let html = '';
+
+      if (type === 'accordion') {
+        html = '<label>Heading:</label><input type="text" class="heading" placeholder="Enter heading">' +
+               '<label>Description:</label><textarea class="description" placeholder="Enter description"></textarea>';
+      } else if (type === 'image') {
+        html = '<label>Image URL:</label><input type="text" class="imageSrc" placeholder="https://...">' +
+               '<label>Alt Text:</label><input type="text" class="imageAlt" placeholder="Image description">' +
+               '<label>Caption:</label><input type="text" class="imageCaption" placeholder="Caption below image">';
+      } else if (type === 'code') {
+        html = '<label>Code Block:</label><textarea class="codeBlock" placeholder="Enter your code here"></textarea>';
+      } else if (type === 'video') {
+        html = '<label>Video Embed URL:</label><input type="text" class="videoSrc" placeholder="https://...">';
+      } else if (type === 'flashcard') {
+        html = '<label>Prompt (Question):</label><input type="text" class="flashPrompt" placeholder="Click to reveal">' +
+               '<label>Answer (Revealed):</label><input type="text" class="flashAnswer" placeholder="The hidden content">';
+      } else if (type === 'alert') {
+        html = '<label>Alert Content:</label><textarea class="alertText" placeholder="Important message"></textarea>';
+      } else if (type === 'table') {
+        html = '<label>Table Headers (comma separated):</label><input type="text" class="tableHeaders" placeholder="Header1,Header2">' +
+               '<label>Table Rows (one row per line, comma separated):</label><textarea class="tableRows" placeholder="Cell1,Cell2\nCell3,Cell4"></textarea>';
+      }
+
+      block.innerHTML = html;
+      container.appendChild(block);
+      document.getElementById('controls').scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    function generateAll() {
+      const modules = document.querySelectorAll('.module-block');
+      let output = '';
+
+      modules.forEach(block => {
+        const type = block.dataset.type;
+
+        if (type === 'accordion') {
+          const heading = block.querySelector('.heading')?.value.trim();
+          const description = block.querySelector('.description')?.value.trim();
+          if (heading && description) {
+            output += `<details style="border:2px solid #d0dff0; border-radius:8px; margin-bottom:1rem; background:#fff; padding:1rem;">
+  <summary style="font-size:1.2rem; font-weight:bold; color:#2a5d9f;">${heading}</summary>
+  <p>${description}</p>
+</details>
+`;
+          }
+        }
+
+        if (type === 'image') {
+          const src = block.querySelector('.imageSrc')?.value.trim();
+          const alt = block.querySelector('.imageAlt')?.value.trim();
+          const caption = block.querySelector('.imageCaption')?.value.trim();
+          if (src && caption) {
+            output += `<figure>
+  <img src="${src}" alt="${alt}" style="max-width:100%; border-radius:8px;">
+  <figcaption style="text-align: center; font-style: italic;">${caption}</figcaption>
+</figure>
+`;
+          }
+        }
+
+        if (type === 'code') {
+          const code = block.querySelector('.codeBlock')?.value;
+          if (code) {
+            output += `<pre style="background:#f4f4f4; padding: 1rem; border-radius: 6px;"><code>${code}</code></pre>
+`;
+          }
+        }
+
+        if (type === 'video') {
+          const video = block.querySelector('.videoSrc')?.value.trim();
+          if (video) {
+            output += `<iframe width="560" height="315" src="${video}" frameborder="0" allowfullscreen style="max-width:100%; border-radius: 8px;"></iframe>
+`;
+          }
+        }
+
+        if (type === 'flashcard') {
+          const prompt = block.querySelector('.flashPrompt')?.value.trim();
+          const answer = block.querySelector('.flashAnswer')?.value.trim();
+          if (prompt && answer) {
+            output += `<details>
+  <summary>${prompt}</summary>
+  <p>${answer}</p>
+</details>
+`;
+          }
+        }
+
+        if (type === 'alert') {
+          const text = block.querySelector('.alertText')?.value.trim();
+          if (text) {
+            output += `<div style="border-left: 5px solid #2a5d9f; padding: 1rem; background: #eef3fb;">
+  <strong>Tip:</strong> ${text}
+</div>
+`;
+          }
+        }
+
+        if (type === 'table') {
+          const headers = block.querySelector('.tableHeaders')?.value.split(',').map(h => h.trim());
+          const rows = block.querySelector('.tableRows')?.value.trim().split('\n');
+          if (headers.length && rows.length) {
+            output += `<table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
+  <thead><tr>`;
+            headers.forEach(h => {
+              output += `<th style="border: 1px solid #ccc; padding: 8px;">${h}</th>`;
+            });
+            output += `</tr></thead>
+  <tbody>`;
+            rows.forEach(row => {
+              const cells = row.split(',').map(c => c.trim());
+              output += `<tr>`;
+              cells.forEach(cell => {
+                output += `<td style="border: 1px solid #ccc; padding: 8px;">${cell}</td>`;
+              });
+              output += `</tr>`;
+            });
+            output += `</tbody>
+</table>
+`;
+          }
+        }
+      });
+
+      document.getElementById('output').textContent = output;
+      document.getElementById('preview').innerHTML = output;
+    }
+
+    function copyToClipboard() {
+      const text = document.getElementById('output').innerText;
+      const tempInput = document.createElement('textarea');
+      tempInput.value = text;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      tempInput.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert('HTML copied to clipboard!');
+    }
+
+    function deleteLastModule() {
+      const container = document.getElementById('moduleContainer');
+      const blocks = container.querySelectorAll('.module-block');
+      if (blocks.length > 0) {
+        container.removeChild(blocks[blocks.length - 1]);
+      }
+    }
+  </script>
+</body>
+</html>
